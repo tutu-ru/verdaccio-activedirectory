@@ -1,3 +1,13 @@
+<a name="1.2.1"></a>
+## 1.2.1 (2018-07-28)
+
+
+### Bug Fixes
+
+* Исправлена логика проверки пользователя на существование в АД ([c51f7ee](https://github.com/tutu-ru/verdaccio-activedirectory/commit/c51f7ee))
+
+
+
 <a name="1.2.0"></a>
 # 1.2.0 (2018-07-28)
 
