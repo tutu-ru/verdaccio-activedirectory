@@ -2,10 +2,7 @@
 
 var ActiveDirectory = require('activedirectory');
 var _ = require('lodash');
-var fs = require('fs');
-var minimatch = require('minimatch');
 var htpasswdPlugin = require('verdaccio-htpasswd');
-var parseHTPasswd = require('verdaccio-htpasswd/lib/utils').parseHTPasswd;
 
 function Plugin(config, stuff) {
 	var self = Object.create(Plugin.prototype);
@@ -108,55 +105,5 @@ Plugin.prototype.adduser = function(user, password, callback) {
 	var username = self._getHtpasswdUsername(user);
 	return self._htpasswdPlugin.adduser(username, password, callback);
 };
-
-// /**
-//  * Scoped publication permissions
-//  */
-// Plugin.prototype.allow_publish = function(user, pkg, callback) {
-//   var self = this;
-//   var rules = self._config.extendedUsersPublishScope;
-//   if (!self._config.extendedUsersFile || !rules || !rules.mode || !rules.scope) {
-//     return callback(null, true);
-//   }
-
-//   fs.readFile(self._config.extendedUsersFile, 'utf8', function(err, buffer) {
-//     if (err) {
-//       return callback(err);
-//     }
-//     var users = parseHTPasswd(buffer);
-//     console.log(users)
-//     console.log(user)
-//     if (!users[ self._getHtpasswdUsername(user.name) ]) {
-//       return callback(null, true);
-//     }
-
-//     console.log(rules)
-
-//     var ok = true;
-//     var scopes = rules.scope.split(' ');
-
-//     if (rules.mode === 'access') {
-//       console.log('access mode')
-//       ok = false;
-//       for (var i = 0; i < scopes.length; i++) {
-//         console.log('check ' + scope, pkg.name)
-//         if (minimatch.makeRe(scope).exec(pkg.name)) {
-//           ok = true;
-//         }
-//       }
-//     } else if (rules.mode === 'restrict') {
-//       ok = true;
-//       for (var i = 0; i < scopes.length; i++) {
-//         if (minimatch.makeRe(scope).exec(pkg.name)) {
-//           ok = false;
-//         }
-//       }
-//     } else {
-//       return callback(new Error('Invalid extendedUsersPublishScope.mode option'));
-//     }
-
-//     return callback(null, ok);
-//   })
-// }
 
 module.exports = Plugin;
