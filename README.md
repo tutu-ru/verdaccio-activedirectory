@@ -1,5 +1,7 @@
 # verdaccio-activedirectory
-Active Directory authentication plugin for verdaccio
+Extended Active Directory authentication plugin for verdaccio.
+
+Firstly checks user in AD, then uses htpasswd authentication if not found.
 
 
 ## Installation
