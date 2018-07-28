@@ -20,6 +20,7 @@
   "dependencies": {
     "activedirectory": "^0.7.2",
     "lodash": "^4.13.1",
+    "minimatch": "^3.0.4",
     "verdaccio-htpasswd": "^0.2.1"
   }
 }
