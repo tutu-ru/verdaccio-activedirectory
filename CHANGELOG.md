@@ -1,3 +1,18 @@
+<a name="1.2.0"></a>
+# 1.2.0 (2018-07-28)
+
+
+### Bug Fixes
+
+* **publish:** Сохраняю функцию allow_publish, вдруг пригодится ([b4c6747](https://github.com/tutu-ru/verdaccio-activedirectory/commit/b4c6747))
+
+
+### Features
+
+* **group:** Пользователям выдаются группы в зависимости от метода авторизации. Плюс откатил ненужный метод ([1a289d5](https://github.com/tutu-ru/verdaccio-activedirectory/commit/1a289d5))
+
+
+
 <a name="1.1.0"></a>
 # 1.1.0 (2018-07-28)
 
