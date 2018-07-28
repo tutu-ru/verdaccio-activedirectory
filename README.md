@@ -3,7 +3,7 @@ Extended Active Directory authentication plugin for verdaccio.
 
 Firstly checks user in AD, then uses htpasswd authentication if not found.
 
-Adds to each user logged in via AD "$ActiveDirectory" group and `_extendedUsersSuffix` (defaults to "OUTSOURCE") group to all the others.
+Adds to each user logged in via AD "$ActiveDirectory" group and `extendedUsersSuffix` (defaults to "OUTSOURCE") group to all the others.
 
 ## Installation
 
@@ -22,5 +22,5 @@ auth:
     baseDN: 'dc=sample,dc=local'
     domainSuffix: 'sample.local'
     extendedUsersFile: '/path/to/local/passwords/file'
-    _extendedUsersSuffix: OUTSOURCE #optional
+    extendedUsersSuffix: OUTSOURCE #optional
 ```
