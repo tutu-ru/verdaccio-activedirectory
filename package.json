@@ -1,10 +1,10 @@
 {
-  "name": "@tutu/verdaccio-activedirectory-extended",
+  "name": "verdaccio-activedirectory-extended",
   "version": "1.0.0",
   "description": "Extended Active Directory authentication plugin for verdaccio",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified (@TODO)\""
   },
   "author": "semenov@tutu.ru",
   "license": "MIT",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "activedirectory": "^0.7.2",
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "verdaccio-htpasswd": "^0.2.1"
   }
 }
