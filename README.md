@@ -18,4 +18,5 @@ auth:
     url: "ldap://10.0.100.1"
     baseDN: 'dc=sample,dc=local'
     domainSuffix: 'sample.local'
+    extendedUsersFile: '/path/to/local/passwords/file'
 ```
