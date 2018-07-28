@@ -1,4 +1,4 @@
-# verdaccio-activedirectory
+# verdaccio-activedirectory-extended
 Extended Active Directory authentication plugin for verdaccio.
 
 Firstly checks user in AD, then uses htpasswd authentication if not found.
@@ -8,7 +8,7 @@ Adds to each user logged in via AD "$ActiveDirectory" group and `extendedUsersSu
 ## Installation
 
 ```sh
-$ npm install verdaccio-activedirectory
+$ npm install verdaccio-activedirectory-extended
 ```
 
 ## Config
@@ -22,5 +22,5 @@ auth:
     baseDN: 'dc=sample,dc=local'
     domainSuffix: 'sample.local'
     extendedUsersFile: '/path/to/local/passwords/file'
-    extendedUsersSuffix: OUTSOURCE #optional
+    extendedUsersSuffix: 'OUTSOURCE' #optional
 ```
