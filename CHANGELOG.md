@@ -1,3 +1,13 @@
+<a name="1.4.2"></a>
+## 1.4.2 (2018-08-03)
+
+
+### Bug Fixes
+
+* **errors:** Ошибкам добавлены статус-коды ([f0d0093](https://github.com/tutu-ru/verdaccio-activedirectory/commit/f0d0093))
+
+
+
 <a name="1.4.0"></a>
 # 1.4.0 (2018-08-03)
 
