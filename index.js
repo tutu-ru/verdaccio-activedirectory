@@ -3,6 +3,9 @@
 var ActiveDirectory = require('activedirectory');
 var htpasswdPlugin = require('verdaccio-htpasswd');
 
+var userGroupsCache = {};
+var userGroupsCacheTTL = 1000 * 60 * 60 * 24 * 30;
+
 function Plugin(config, stuff) {
 	var self = Object.create(Plugin.prototype);
 	self._config = config;
@@ -53,32 +56,51 @@ Plugin.prototype.authenticate = function(user, password, callback) {
 	var self = this;
 	var username = user + '@' + self._config.domainSuffix;
 
-	var processAuthenticated = function(authenticated, method, group) {
+	var processAuthenticated = function(authenticated, method, group, getGroups) {
 		if (!authenticated) {
 			var message = '' + method + ' authentication failed';
 			self._logger.warn(message);
 			return callback(new Error(message));
 		}
 
+		if (getGroups === undefined) {
+			getGroups = true;
+		}
+
 		self._logger.info('' + method + ' authentication succeeded')
+		if (!getGroups) {
+			return callback(null, [user, group]);
+		}
 
 		/**
 		 * Obtaining user groups from AD
 		 */
-		self._connection.getGroupMembershipForUser(user, function(err, groups) {
-			if (err) {
-				self._logger.warn('Couldn\'t obtain groups of user ', user, 'Error code:', err.code + '.', 'Error:\n', err);
-				return callback(null, [user, group]);
-			}
+		var now = +new Date();
+		if (
+			userGroupsCache &&
+			userGroupsCache[user] &&
+			userGroupsCache[user]['last_checked'] + userGroupsCacheTTL > now
+		) {
+			return callback(null, userGroupsCache[user]['groups']);
+		} else {
+			setTimeout(function() {
+				self._connection.getGroupMembershipForUser(user, function(err, groups) {
+					if (err) {
+						self._logger.warn('Couldn\'t obtain groups of user ', user, 'Error code:', err.code + '.', 'Error:\n', err);
+						return callback(null, [user, group]);
+					}
 
-			const groupNames = [user, group].concat(
-				groups.map(function(g) {
-					return g.cn;
-				})
-			);
-			self._logger.info('Got user groups', groupNames);
-			callback(null, groupNames);
-		});
+					const groupNames = [user, group].concat(
+						groups.map(function(g) {
+							return g.cn;
+						})
+					);
+					self._logger.info('Got user groups', groupNames);
+					userGroupsCache[user] = { groups: groupNames, last_checked: now };
+					callback(null, groupNames);
+				});
+			}, 500);
+		}
 	};
 
 	var authenticateViaHtpasswd = function() {
@@ -90,7 +112,8 @@ Plugin.prototype.authenticate = function(user, password, callback) {
 				return processAuthenticated(
 					hAuthenticated,
 					'htpasswd',
-					self._extendedUsersSuffix
+					self._extendedUsersSuffix,
+					false
 				);
 			}
 		};
@@ -135,6 +158,11 @@ Plugin.prototype._getHtpasswdUsername = function(user) {
  */
 Plugin.prototype.adduser = function(user, password, callback) {
 	var self = this;
+
+	/**
+	 * Invalidating user groups cache for user that relogins
+	 */
+	userGroupsCache[user] = {};
 
 	/**
 	 * Stop adduser if username already exists in AD
