@@ -60,7 +60,9 @@ Plugin.prototype.authenticate = function(user, password, callback) {
 		if (!authenticated) {
 			var message = '' + method + ' authentication failed';
 			self._logger.warn(message);
-			return callback(new Error(message));
+			var error = new Error(message);
+			error.status = 401;
+			return callback(error);
 		}
 
 		if (getGroups === undefined) {
@@ -180,7 +182,9 @@ Plugin.prototype.adduser = function(user, password, callback) {
 		if (!self._htpasswdPlugin) {
 			var message = 'No extendedUsersFile provided in config. Registration is forbidden';
 			self._logger.warn(message);
-			return callback(new Error(message));
+			var error = new Error(message);
+			error.status = 409;
+			return callback(error);
 		}
 
 		var username = self._getHtpasswdUsername(user);
