@@ -86,21 +86,26 @@ Plugin.prototype.authenticate = function(user, password, callback) {
 			return callback(null, userGroupsCache[user]['groups']);
 		} else {
 			setTimeout(function() {
-				self._connection.getGroupMembershipForUser(user, function(err, groups) {
-					if (err) {
-						self._logger.warn('Couldn\'t obtain groups of user ', user, 'Error code:', err.code + '.', 'Error:\n', err);
-						return callback(null, [user, group]);
-					}
+        try {
+          self._connection.getGroupMembershipForUser(user, function(err, groups) {
+            if (err) {
+              self._logger.warn('Couldn\'t obtain groups of user ', user, 'Error code:', err.code + '.', 'Error:\n', err);
+              return callback(null, [user, group]);
+            }
 
-					const groupNames = [user, group].concat(
-						groups.map(function(g) {
-							return g.cn;
-						})
-					);
-					self._logger.info('Got user groups', groupNames);
-					userGroupsCache[user] = { groups: groupNames, last_checked: now };
-					callback(null, groupNames);
-				});
+            const groupNames = [user, group].concat(
+              groups.map(function(g) {
+                return g.cn;
+              })
+            );
+            self._logger.info('Got user groups', groupNames);
+            userGroupsCache[user] = { groups: groupNames, last_checked: now };
+            callback(null, groupNames);
+          });
+        } catch (err) {
+          self._logger.error('Couldn\'t obtain groups of user ', user, 'Uncaught Exception:\n', err);
+          return callback(null, [user, group]);
+        }
 			}, 500);
 		}
 	};
@@ -126,29 +131,41 @@ Plugin.prototype.authenticate = function(user, password, callback) {
 	/**
 	 * If the user exists in AD, we do not try authenticating him with htpasswd
 	 */
-	self._connection.userExists(user, function(err, exists) {
-		if (err) {
-			self._logger.warn('Active Directory user existance check failed. Error code:', err.code + '.', 'Error:\n', err);
-			return callback(err);
-		}
-		if (exists) {
-			self._connection.authenticate(username, password, function(err, authenticated) {
-				if (err) {
-					self._logger.warn('Active Directory authentication failed. Error code:', err.code + '.', 'Error:\n', err);
-					return callback(err);
-				} else {
-					return processAuthenticated(
-						authenticated,
-						'Active Directory',
-						'$ActiveDirectory'
-					);
-				}
-			});
-		} else if (self._htpasswdPlugin) {
-			self._logger.warn('Active Directory authentication failed. Trying htpasswd authentication...');
-			return authenticateViaHtpasswd();
-		}
-	});
+  try {
+    self._connection.userExists(user, function(err, exists) {
+      if (err) {
+        self._logger.warn('Active Directory user existance check failed. Error code:', err.code + '.', 'Error:\n', err);
+        return callback(err);
+      }
+      if (exists) {
+        try {
+          self._connection.authenticate(username, password, function(err, authenticated) {
+            if (err) {
+              self._logger.warn('Active Directory authentication failed. Error code:', err.code + '.', 'Error:\n', err);
+              return callback(err);
+            } else {
+              return processAuthenticated(
+                authenticated,
+                'Active Directory',
+                '$ActiveDirectory'
+              );
+            }
+          });
+        } catch (e) {
+          self._logger.error('Active Directory authentication failed. Uncaught exception: ', e);
+          e.status = e.status || 500;
+          callback(e);
+        }
+      } else if (self._htpasswdPlugin) {
+        self._logger.warn('Active Directory authentication failed. Trying htpasswd authentication...');
+        return authenticateViaHtpasswd();
+      }
+    });
+  } catch (err) {
+    self._logger.error('Active Directory user existance check failed. Uncaught exception: ', err);
+    err.status = err.status || 500;
+    callback(err);
+  }
 };
 
 Plugin.prototype._getHtpasswdUsername = function(user) {
@@ -169,28 +186,34 @@ Plugin.prototype.adduser = function(user, password, callback) {
 	/**
 	 * Stop adduser if username already exists in AD
 	 */
-	self._connection.userExists(user, function(err, exists) {
-		if (err) {
-			self._logger.warn('Active Directory user existance check failed. Error code:', err.code + '.', 'Error:\n', err);
-			return callback(err);
-		}
-		if (exists) {
-			self._logger.info('Active Directory user exists. adduser skipped');
-			return callback(null, false);
-		}
+  try {
+    self._connection.userExists(user, function(err, exists) {
+      if (err) {
+        self._logger.warn('Active Directory user existance check failed. Error code:', err.code + '.', 'Error:\n', err);
+        return callback(err);
+      }
+      if (exists) {
+        self._logger.info('Active Directory user exists. adduser skipped');
+        return callback(null, false);
+      }
 
-		if (!self._htpasswdPlugin) {
-			var message = 'No extendedUsersFile provided in config. Registration is forbidden';
-			self._logger.warn(message);
-			var error = new Error(message);
-			error.status = 409;
-			return callback(error);
-		}
+      if (!self._htpasswdPlugin) {
+        var message = 'No extendedUsersFile provided in config. Registration is forbidden';
+        self._logger.warn(message);
+        var error = new Error(message);
+        error.status = 409;
+        return callback(error);
+      }
 
-		var username = self._getHtpasswdUsername(user);
-		self._logger.info('Creating user ' + username + ' with htpasswd strategy');
-		return self._htpasswdPlugin.adduser(username, password, callback);
-	});
+      var username = self._getHtpasswdUsername(user);
+      self._logger.info('Creating user ' + username + ' with htpasswd strategy');
+      return self._htpasswdPlugin.adduser(username, password, callback);
+    });
+  } catch (err) {
+    self._logger.error('Active Directory user existance check failed. Uncaught exception: ', err);
+    err.status = err.status || 500;
+    callback(err);
+  }
 };
 
 module.exports = Plugin;
