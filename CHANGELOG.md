@@ -1,3 +1,13 @@
+<a name="1.4.3-catch-errors.0"></a>
+## 1.4.3-catch-errors.0 (2018-11-09)
+
+
+### Bug Fixes
+
+* **errors:** try {} catch(e) {} EVERYWHERE. Reason: vendor activedirectory module sometimes unexpectedly throws ([c4b1a97](https://github.com/tutu-ru/verdaccio-activedirectory/commit/c4b1a97))
+
+
+
 <a name="1.4.2"></a>
 ## 1.4.2 (2018-08-03)
 
